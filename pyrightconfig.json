@@ -1,0 +1,7 @@
+{
+    "venvPath": "/home/bidjed/Documents/4thYearEng/s2/NOSQL/MongoDB_project",
+    "venv": ".venv",
+    "extraPaths": [
+        "."
+    ]
+}

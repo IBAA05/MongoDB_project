@@ -8,7 +8,6 @@ from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
 from pymongo import TEXT, ASCENDING, DESCENDING
 from app.core.config import settings
 
-
 class Database:
     client: AsyncIOMotorClient = None
 

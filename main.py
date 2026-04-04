@@ -22,6 +22,9 @@ from app.routes import data_routes, search_routes, index_routes
 # Person 2 routers
 from app.routes import aggregation_routes, filter_routes, stats_routes
 
+# Person 3 routers
+from app.routes import crud_routes
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -81,13 +84,26 @@ app = FastAPI(
                 "top brands, price distribution, and collection metadata (collStats)."
             ),
         },
+        # ── Person 3 tags ──────────────────────────────────────────────────────
+        {
+            "name": "🛠️ Full CRUD Operations",
+            "description": (
+                "Document-level CRUD — update, replace, delete by ID, "
+                "bulk delete by name/brand, bulk updates using $mul, $set, and $unset."
+            ),
+        },
     ],
 )
 
 # Allow React dev server to call the API
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:5173", 
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -104,6 +120,9 @@ app.include_router(index_routes.router)
 app.include_router(aggregation_routes.router)
 app.include_router(filter_routes.router)
 app.include_router(stats_routes.router)
+
+# Person 3
+app.include_router(crud_routes.router)
 
 
 @app.get("/", tags=["Root"])
@@ -152,5 +171,14 @@ async def root():
             "GET  /phones/stats/top-brand-price",
             "GET  /phones/stats/price-distribution",
             "GET  /phones/stats/collection",
+        ],
+        "person_3_endpoints": [
+            "PATCH  /phones/{id}",
+            "PUT    /phones/{id}",
+            "DELETE /phones/{id}",
+            "DELETE /phones/bulk/delete",
+            "PATCH  /phones/brand/{brand}/price",
+            "PATCH  /phones/bulk/add-fields",
+            "PATCH  /phones/bulk/remove-field",
         ],
     }

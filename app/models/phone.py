@@ -53,6 +53,40 @@ class PhoneCreate(BaseModel):
     }
 
 
+class PhoneUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, description="New name (optional)")
+    brand: Optional[str] = Field(None, min_length=1, description="New brand (optional)")
+    description: Optional[str] = Field(None, min_length=5, description="New description (optional)")
+    price: Optional[float] = Field(None, gt=0, description="New price (optional)")
+    category: Optional[str] = Field(
+        None,
+        description="New category (optional)",
+        pattern="^(budget|mid-range|flagship)$",
+    )
+    stock: Optional[int] = Field(None, ge=0, description="New stock (optional)")
+    rating: Optional[float] = Field(None, ge=0, le=5, description="New rating (optional)")
+
+    @field_validator("price")
+    @classmethod
+    def price_must_be_positive_optional(cls, v: Optional[float]) -> Optional[float]:
+        if v is not None:
+            if v <= 0:
+                raise ValueError("price must be a positive number")
+            return round(v, 2)
+        return v
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "name": "Samsung Galaxy S24 Ultra",
+                    "price": 1199.99,
+                }
+            ]
+        }
+    }
+
+
 # ── Output schema ─────────────────────────────────────────────────────────────
 
 class PhoneOut(BaseModel):
