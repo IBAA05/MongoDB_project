@@ -7,7 +7,7 @@ Full CRUD (update/delete/bulk) belongs to Person 3.
 from motor.motor_asyncio import AsyncIOMotorCollection
 from app.services.seed_service import seed_phones
 from app.models.phone import PhoneCreate
-from bson import ObjectId
+from app.core.notifications import manager
 
 
 async def seed(collection: AsyncIOMotorCollection):
@@ -18,6 +18,15 @@ async def add_phone(collection: AsyncIOMotorCollection, phone: PhoneCreate):
     doc = phone.model_dump()
     result = await collection.insert_one(doc)
     doc["_id"] = str(result.inserted_id)
+
+    # Notify clients
+    await manager.broadcast({
+        "type": "CREATE",
+        "title": "New Phone Added",
+        "message": f"Successfully added {doc.get('name', 'a new phone')}.",
+        "id": doc["_id"]
+    })
+
     return doc
 
 

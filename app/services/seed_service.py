@@ -5,6 +5,7 @@ Inserts 22 sample smartphone documents into the phones collection.
 Called via POST /phones/seed — idempotent (skips duplicates by name).
 """
 from motor.motor_asyncio import AsyncIOMotorCollection
+from app.core.notifications import manager
 
 SAMPLE_PHONES = [
     {"name": "Samsung Galaxy S24 Ultra", "brand": "Samsung",
@@ -111,7 +112,13 @@ async def seed_phones(collection: AsyncIOMotorCollection) -> dict:
             skipped += 1
             continue
         await collection.insert_one(phone)
-        inserted += 1
+    # Notify clients
+    if inserted > 0:
+        await manager.broadcast({
+            "type": "CREATE",
+            "title": "Database Seeded",
+            "message": f"Successfully seeded {inserted} new phones. ({skipped} skipped)",
+        })
 
     return {
         "inserted": inserted,

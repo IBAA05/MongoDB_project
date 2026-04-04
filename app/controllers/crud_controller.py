@@ -7,6 +7,7 @@ from motor.motor_asyncio import AsyncIOMotorCollection
 from app.models.phone import PhoneCreate, PhoneUpdate
 from bson.objectid import ObjectId
 from fastapi import HTTPException
+from app.core.notifications import manager
 
 
 async def update_phone_partial(collection: AsyncIOMotorCollection, phone_id: str, phone: PhoneUpdate):
@@ -26,6 +27,14 @@ async def update_phone_partial(collection: AsyncIOMotorCollection, phone_id: str
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Phone not found")
     
+    # Notify clients
+    await manager.broadcast({
+        "type": "UPDATE",
+        "title": "Phone Updated",
+        "message": f"Successfully updated fields for phone {phone_id}.",
+        "id": phone_id
+    })
+    
     return {"message": "Phone updated successfully", "updated_fields": list(update_data.keys())}
 
 
@@ -43,6 +52,15 @@ async def replace_phone(collection: AsyncIOMotorCollection, phone_id: str, phone
         raise HTTPException(status_code=404, detail="Phone not found")
     
     doc["_id"] = phone_id
+
+    # Notify clients
+    await manager.broadcast({
+        "type": "UPDATE",
+        "title": "Phone Replaced",
+        "message": f"Successfully replaced phone: {doc.get('name', phone_id)}",
+        "id": phone_id
+    })
+
     return doc
 
 
@@ -54,6 +72,15 @@ async def delete_phone(collection: AsyncIOMotorCollection, phone_id: str):
     result = await collection.delete_one({"_id": ObjectId(phone_id)})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Phone not found")
+
+    # Notify clients
+    await manager.broadcast({
+        "type": "DELETE",
+        "title": "Phone Deleted",
+        "message": f"Phone {phone_id} was successfully deleted.",
+        "id": phone_id
+    })
+
     return {"message": f"Phone {phone_id} successfully deleted"}
 
 
@@ -69,6 +96,15 @@ async def delete_phones_by_name_or_brand(collection: AsyncIOMotorCollection, nam
         raise HTTPException(status_code=400, detail="Must provide name or brand to delete")
 
     result = await collection.delete_many(query)
+
+    # Notify clients
+    await manager.broadcast({
+        "type": "DELETE",
+        "title": "Bulk Deletion",
+        "message": f"Deleted {result.deleted_count} phones matching criteria.",
+        "query": query
+    })
+
     return {"message": f"Deleted {result.deleted_count} phones matching criteria"}
 
 
@@ -82,6 +118,14 @@ async def bulk_update_price_by_brand(collection: AsyncIOMotorCollection, brand: 
         {"brand": brand},
         {"$mul": {"price": multiplier}}
     )
+
+    # Notify clients
+    await manager.broadcast({
+        "type": "UPDATE",
+        "title": "Price Update",
+        "message": f"Updated price for {result.modified_count} {brand} phones by {percentage_increase}%."
+    })
+
     return {"message": f"Updated price for {result.modified_count} {brand} phones."}
 
 

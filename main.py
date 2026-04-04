@@ -25,6 +25,9 @@ from app.routes import aggregation_routes, filter_routes, stats_routes
 # Person 3 routers
 from app.routes import crud_routes
 
+# Notifications
+from app.routes import notification_routes
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -123,6 +126,9 @@ app.include_router(stats_routes.router)
 
 # Person 3
 app.include_router(crud_routes.router)
+
+# Notifications
+app.include_router(notification_routes.router)
 
 
 @app.get("/", tags=["Root"])
