@@ -86,34 +86,67 @@ export default function DatabaseView() {
                   <th className="px-4 py-3">ID</th>
                   <th className="px-4 py-3">Name</th>
                   <th className="px-4 py-3">Brand</th>
+                  <th className="px-4 py-3">Category</th>
                   <th className="px-4 py-3 text-right">Price</th>
+                  <th className="px-4 py-3 text-right">Stock</th>
+                  <th className="px-4 py-3 text-right">Rating</th>
+                  <th className="px-4 py-3">Description</th>
                 </tr>
               </thead>
               <tbody className="divide-y text-xs divide-slate-100">
-                {phones.map(phone => (
-                  <tr key={phone._id} className="hover:bg-slate-50/50">
-                    <td className="px-4 py-3 font-mono text-slate-400">
-                      <div className="flex items-center gap-2 group">
-                        <span>..{phone._id?.slice(-6)}</span>
-                        <button 
-                          onClick={() => {
-                            navigator.clipboard.writeText(phone._id);
-                            // Simple visual feedback could be added here if needed, 
-                            // but standard browser alerts/success icons are often enough.
-                            alert('ID Copied: ' + phone._id);
-                          }}
-                          className="p-1 hover:bg-slate-200 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                          title="Copy Full ID"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                        </button>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 font-medium text-slate-900">{phone.name}</td>
-                    <td className="px-4 py-3">{phone.brand}</td>
-                    <td className="px-4 py-3 text-right">${phone.price}</td>
-                  </tr>
-                ))}
+                {phones.map(phone => {
+                  const categoryColors = {
+                    flagship: 'bg-purple-100 text-purple-700',
+                    'mid-range': 'bg-blue-100 text-blue-700',
+                    budget: 'bg-emerald-100 text-emerald-700',
+                  };
+                  const catClass = categoryColors[phone.category] || 'bg-slate-100 text-slate-500';
+                  return (
+                    <tr key={phone._id} className="hover:bg-slate-50/50 align-middle">
+                      <td className="px-4 py-3 font-mono text-slate-400">
+                        <div className="flex items-center gap-2 group">
+                          <span>..{phone._id?.slice(-6)}</span>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(phone._id);
+                              alert('ID Copied: ' + phone._id);
+                            }}
+                            className="p-1 hover:bg-slate-200 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Copy Full ID"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">{phone.name}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">{phone.brand}</td>
+                      <td className="px-4 py-3">
+                        {phone.category
+                          ? <span className={`px-2 py-0.5 rounded-full text-xs font-semibold capitalize ${catClass}`}>{phone.category}</span>
+                          : <span className="text-slate-300">—</span>}
+                      </td>
+                      <td className="px-4 py-3 text-right font-semibold text-slate-800 whitespace-nowrap">${phone.price?.toFixed(2)}</td>
+                      <td className="px-4 py-3 text-right">
+                        {phone.stock != null
+                          ? <span className={`font-medium ${phone.stock < 50 ? 'text-rose-500' : 'text-slate-700'}`}>{phone.stock}</span>
+                          : <span className="text-slate-300">—</span>}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {phone.rating != null
+                          ? <span className="flex items-center justify-end gap-1">
+                              <span className="text-amber-400">★</span>
+                              <span className="font-medium text-slate-700">{phone.rating}</span>
+                            </span>
+                          : <span className="text-slate-300">—</span>}
+                      </td>
+                      <td className="px-4 py-3 text-slate-500 max-w-xs">
+                        <span title={phone.description} className="block truncate max-w-[200px] cursor-help">
+                          {phone.description || <span className="text-slate-300">—</span>}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

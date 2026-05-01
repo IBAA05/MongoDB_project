@@ -4,7 +4,7 @@ core/database.py
 Manages the Motor async MongoDB client lifecycle.
 Called once on FastAPI startup and shutdown.
 """
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection, AsyncIOMotorDatabase
 from pymongo import TEXT, ASCENDING, DESCENDING
 from app.core.config import settings
 
@@ -18,6 +18,15 @@ db_state = Database()
 def get_collection() -> AsyncIOMotorCollection:
     """Return the phones collection — injected via FastAPI Depends."""
     return db_state.client[settings.DB_NAME][settings.COLLECTION_NAME]
+
+
+def get_db() -> AsyncIOMotorDatabase:
+    """
+    Return the full database object.
+    Used by routes that need access to multiple collections
+    (e.g. client_routes needs both `phones` and `clients`).
+    """
+    return db_state.client[settings.DB_NAME]
 
 
 async def connect_db():

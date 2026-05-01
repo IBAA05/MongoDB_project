@@ -25,6 +25,9 @@ from app.routes import aggregation_routes, filter_routes, stats_routes
 # Person 3 routers
 from app.routes import crud_routes
 
+# Clients & Reviews router
+from app.routes import client_routes
+
 # Notifications
 from app.routes import notification_routes
 
@@ -95,6 +98,28 @@ app = FastAPI(
                 "bulk delete by name/brand, bulk updates using $mul, $set, and $unset."
             ),
         },
+        # ── Clients & Reviews tag ──────────────────────────────────────────────
+        {
+            "name": "👤 Clients & Reviews",
+            "description": (
+                "**Two-collection design with no redundancy.**\n\n"
+                "- `clients` collection stores client profiles (name, phone_number).\n"
+                "- Reviews are **embedded** inside each phone document as an array.\n"
+                "- Each review stores only `client_id` (reference) + `client_name` "
+                "(lightweight snapshot) — the full client object is never duplicated.\n\n"
+                "**Endpoints:**\n"
+                "- `POST /clients` — register a client\n"
+                "- `GET /clients` — list all clients\n"
+                "- `GET /clients/{id}` — get one client\n"
+                "- `PATCH /clients/{id}` — update a client\n"
+                "- `DELETE /clients/{id}` — delete a client\n"
+                "- `POST /phones/{id}/reviews?client_id=` — add a review to a phone\n"
+                "- `PATCH /phones/{id}/reviews?client_id=` — update a review\n"
+                "- `DELETE /phones/{id}/reviews?client_id=` — remove a review\n"
+                "- `GET /phones/{id}/reviews` — all reviews for a phone\n"
+                "- `GET /clients/{id}/reviews` — all reviews by a client (reverse lookup)"
+            ),
+        },
     ],
 )
 
@@ -102,7 +127,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173", 
+        "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
@@ -126,6 +151,9 @@ app.include_router(stats_routes.router)
 
 # Person 3
 app.include_router(crud_routes.router)
+
+# Clients & Reviews
+app.include_router(client_routes.router)
 
 # Notifications
 app.include_router(notification_routes.router)
@@ -186,5 +214,17 @@ async def root():
             "PATCH  /phones/brand/{brand}/price",
             "PATCH  /phones/bulk/add-fields",
             "PATCH  /phones/bulk/remove-field",
+        ],
+        "clients_and_reviews_endpoints": [
+            "POST   /clients",
+            "GET    /clients",
+            "GET    /clients/{id}",
+            "PATCH  /clients/{id}",
+            "DELETE /clients/{id}",
+            "POST   /phones/{id}/reviews?client_id=",
+            "PATCH  /phones/{id}/reviews?client_id=",
+            "DELETE /phones/{id}/reviews?client_id=",
+            "GET    /phones/{id}/reviews",
+            "GET    /clients/{id}/reviews",
         ],
     }

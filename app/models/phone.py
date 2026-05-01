@@ -7,8 +7,10 @@ PhoneCreate  → body of POST /phones  (input)
 PhoneOut     → any endpoint response  (output, _id converted to str)
 SearchResult → wraps PhoneOut with a relevance score field
 """
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, Field, field_validator
+
+from app.models.client import ReviewOut
 
 
 # ── Input schema ──────────────────────────────────────────────────────────────
@@ -98,6 +100,10 @@ class PhoneOut(BaseModel):
     category: Optional[str] = None
     stock: Optional[int] = None
     rating: Optional[float] = None
+    reviews: Optional[List[ReviewOut]] = Field(
+        default=None,
+        description="Embedded list of client reviews for this phone",
+    )
 
     model_config = {"populate_by_name": True}
 
